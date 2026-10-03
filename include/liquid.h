@@ -9490,11 +9490,26 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,                            \
 /*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)               */  \
 /*  _M      : number of channels                                        */  \
 /*  _m      : filter delay (symbols)                                    */  \
-/*  _As     : stop-band attenuation [dB]                                */  \
+/*  _as     : stop-band attenuation [dB]                                */  \
+/*  _bw     : prototype filter bandwidth, relative to input sample      */  \
+/*            rate (negative values default to 1/decim), 0 < _bw < 1    */  \
+FIRPFBCH() FIRPFBCH(_create_prototype)(int          _type,                  \
+                                       unsigned int _M,                     \
+                                       unsigned int _m,                     \
+                                       float        _as,                    \
+                                       float        _bw);                   \
+                                                                            \
+/* Create FIR polyphase filterbank channelizer object with              */  \
+/* prototype filter based on windowed Kaiser design (simplified);       */  \
+/* default bandwidth is 1/_M                                            */  \
+/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)               */  \
+/*  _M      : number of channels                                        */  \
+/*  _m      : filter delay (symbols)                                    */  \
+/*  _as     : stop-band attenuation [dB]                                */  \
 FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,                     \
                                     unsigned int _M,                        \
                                     unsigned int _m,                        \
-                                    float        _As);                      \
+                                    float        _as);                      \
                                                                             \
 /* Create FIR polyphase filterbank channelizer object with              */  \
 /* prototype root-Nyquist filter                                        */  \

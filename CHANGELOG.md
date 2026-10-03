@@ -8,8 +8,9 @@
     - added more efficient progression of trials setting to meet target
       runtime
   * multichannel
-    - firpfbch2, firpfbchr: added interface to support filter bandwidth
-      specification independent of number of channels and decimation rate
+    - firpfbch, firpfbch2, firpfbchr: added interface to support filter
+      bandwidth specification independent of number of channels and
+      decimation rate
 
 ## 1.8.3 - 2026-09-26
 

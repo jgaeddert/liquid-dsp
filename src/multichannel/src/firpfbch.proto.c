@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,8 @@
 #include "liquid.internal.h"
 
 // firpfbch object structure definition
-struct FIRPFBCH(_s) {
+struct FIRPFBCH(_s)
+{
     int type;                   // synthesis/analysis
     unsigned int num_channels;  // number of channels
     unsigned int p;             // filter length (symbols)
@@ -138,25 +139,31 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
 //  _M      : number of channels
 //  _m      : filter delay (symbols)
 //  _as     : stop-band attenuation [dB]
-FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,
-                                    unsigned int _M,
-                                    unsigned int _m,
-                                    float        _as)
+FIRPFBCH() FIRPFBCH(_create_prototype)(int          _type,
+                                       unsigned int _M,
+                                       unsigned int _m,
+                                       float        _as,
+                                       float        _bw)
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER)
-        return liquid_error_config("firpfbch_%s_create_kaiser(), invalid type: %d", EXTENSION_FULL, _type);
+        return liquid_error_config("firpfbch_%s_create_prototype(), invalid type: %d", EXTENSION_FULL, _type);
     if (_M == 0)
-        return liquid_error_config("firpfbch_%s_create_kaiser(), number of channels must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config("firpfbch_%s_create_prototype(), number of channels must be greater than 0", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error_config("firpfbch_%s_create_kaiser(), invalid filter size (must be greater than 0)", EXTENSION_FULL);
+        return liquid_error_config("firpfbch_%s_create_prototype(), invalid filter size (must be greater than 0)", EXTENSION_FULL);
+    if (_bw == 0 || _bw > 1.0f)
+        return liquid_error_config("firpfbch_%s_create_prototype(), bandwidth must be in (0,1]; use negative for default", EXTENSION_FULL);
     
     _as = fabsf(_as);
+
+    if (_bw < 0)
+        _bw = 1.0f / (float)_M;
 
     // design filter
     unsigned int h_len = 2*_M*_m + 1;
     float h[h_len];
-    float fc = 0.5f / (float)_M; // TODO : check this value
+    float fc = 0.5f * _bw;
     liquid_firdes_kaiser(h_len, fc, _as, 0.0f, h);
 
     // copy coefficients to type-specfic array
@@ -171,6 +178,21 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,
 
     // return filterbank object
     return q;
+}
+
+// create FIR polyphase filterbank channelizer object with
+// prototype filter based on windowed Kaiser design
+//  _type   : channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
+//  _M      : number of channels
+//  _m      : filter delay (symbols)
+//  _as     : stop-band attenuation [dB]
+FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,
+                                    unsigned int _M,
+                                    unsigned int _m,
+                                    float        _as)
+{
+    // create object with default bandwidth and return
+    return FIRPFBCH(_create_prototype)(_type, _M, _m, _as, -1.0f);
 }
 
 // create FIR polyphase filterbank channelizer object with
