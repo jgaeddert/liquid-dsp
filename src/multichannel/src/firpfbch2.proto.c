@@ -291,6 +291,12 @@ int FIRPFBCH2(_get_type)(FIRPFBCH2() _q)
 // get number of channels, M
 unsigned int FIRPFBCH2(_get_M)(FIRPFBCH2() _q)
 {
+    return FIRPFBCH2(_get_num_channels)(_q);
+}
+
+// get number of channels, M
+unsigned int FIRPFBCH2(_get_num_channels)(FIRPFBCH2() _q)
+{
     return _q->M;
 }
 

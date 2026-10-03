@@ -160,7 +160,7 @@ LIQUID_AUTOTEST(firpfbch2_crcf_config,"test firpfbch2 configurations","multichan
 
     LIQUID_CHECK(LIQUID_OK ==       firpfbch2_crcf_print(q))
     LIQUID_CHECK(LIQUID_ANALYZER ==  firpfbch2_crcf_get_type(q))
-    LIQUID_CHECK(             76 ==  firpfbch2_crcf_get_M(q))
+    LIQUID_CHECK(             76 ==  firpfbch2_crcf_get_num_channels(q))
     LIQUID_CHECK(             12 ==  firpfbch2_crcf_get_m(q))
 
     firpfbch2_crcf_destroy(q);

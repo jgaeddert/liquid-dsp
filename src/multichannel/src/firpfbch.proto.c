@@ -34,7 +34,7 @@ struct FIRPFBCH(_s)
 {
     int type;                   // synthesis/analysis
     unsigned int num_channels;  // number of channels
-    unsigned int p;             // filter length (symbols)
+    unsigned int p;             // sub-filter length [symbols]
 
     // filter
     unsigned int h_len;         // filter length
@@ -289,6 +289,24 @@ int FIRPFBCH(_print)(FIRPFBCH() _q)
         _q->type == LIQUID_ANALYZER ? "analyzer" : "synthesizer",
         _q->num_channels, _q->p);
     return LIQUID_OK;
+}
+
+// Get type, either LIQUID_ANALYZER or LIQUID_SYNTHESIZER
+int FIRPFBCH(_get_type)(FIRPFBCH() _q)
+{
+    return _q->type;
+}
+
+// Get number of output channels
+unsigned int FIRPFBCH(_get_num_channels)(FIRPFBCH() _q)
+{
+    return _q->num_channels;
+}
+
+// Get prototype sub-filter length 'p' where h_len = num_channels*p + 1
+unsigned int FIRPFBCH(_get_sub_len)(FIRPFBCH() _q)
+{
+    return _q->p;
 }
 
 // 
