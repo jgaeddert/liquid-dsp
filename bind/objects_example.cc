@@ -5,6 +5,7 @@
 #include "fg64.hh"
 #include "firfilt.hh"
 #include "firinterp.hh"
+#include "firpfbch.hh"
 #include "firpfbch2.hh"
 #include "firpfbchr.hh"
 #include "fs64.hh"
@@ -37,6 +38,11 @@ int main()
 
     dsp::firinterp interp(20);
     std::cout << interp << std::endl;
+    dsp::firpfbcha ch(20);
+    std::cout << ch << std::endl;
+
+    dsp::firpfbchs cs(20);
+    std::cout << cs << std::endl;
 
     dsp::firpfbch2a cha(20);
     std::cout << cha << std::endl;
