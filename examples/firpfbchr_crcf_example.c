@@ -15,9 +15,10 @@ int main(int argc, char*argv[])
     liquid_argparse_init(__docstr__);
     liquid_argparse_add(char*,    filename, "firpfbchr_crcf_example.m", 'o', "output filename", NULL);
     liquid_argparse_add(unsigned, M,            16, 'M', "number of channels in analysis filterbank", NULL);
-    liquid_argparse_add(unsigned, P,             6, 'P', "number of channels in synthesis filterbank", NULL);
+    liquid_argparse_add(unsigned, P,             6, 'P', "decimation rate", NULL);
     liquid_argparse_add(unsigned, m,             5, 'm', "filter length [symbols]", NULL);
     liquid_argparse_add(float,    As,           60, 'a', "filter stop-band attenuation", NULL);
+    liquid_argparse_add(float,    bw,           -1, 'w', "filter bandwidth relative to input rate (negative sets default)", NULL);
     liquid_argparse_add(unsigned, num_blocks,1<<16, 'n', "number of symbols", NULL);
     liquid_argparse_parse(argc,argv);
 
@@ -25,7 +26,7 @@ int main(int argc, char*argv[])
     unsigned int channel_id = 3;
 
     // create filterbank objects from prototype
-    firpfbchr_crcf qa = firpfbchr_crcf_create_kaiser(M, P, m, As);
+    firpfbchr_crcf qa = firpfbchr_crcf_create_prototype(M, P, m, As, bw);
     firpfbchr_crcf_print(qa);
 
     // create multi-signal source generator
