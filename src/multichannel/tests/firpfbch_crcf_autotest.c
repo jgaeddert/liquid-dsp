@@ -48,6 +48,8 @@ LIQUID_AUTOTEST(firpfbch_crcf_config,"firpfbch config","multichannel,firpfbch",0
     firpfbch_crcf q = firpfbch_crcf_create_kaiser(LIQUID_ANALYZER, 76, 12, 60.0f);
 
     LIQUID_CHECK(LIQUID_OK == firpfbch_crcf_print(q))
+    LIQUID_CHECK(76 ==  firpfbch_crcf_get_num_channels(q))
+    LIQUID_CHECK(24 ==  firpfbch_crcf_get_sub_len(q)) // sub-filter length is double semi-length
 
     firpfbch_crcf_destroy(q);
     _liquid_error_downgrade_disable();

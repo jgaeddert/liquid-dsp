@@ -9529,6 +9529,15 @@ int FIRPFBCH(_reset)(FIRPFBCH() _q);                                        \
 /* Print firpfbch internal parameters to stdout                         */  \
 int FIRPFBCH(_print)(FIRPFBCH() _q);                                        \
                                                                             \
+/* Get type, either LIQUID_ANALYZER or LIQUID_SYNTHESIZER               */  \
+int FIRPFBCH(_get_type)(FIRPFBCH() _q);                                     \
+                                                                            \
+/* Get number of output channels to channelizer                         */  \
+unsigned int FIRPFBCH(_get_num_channels)(FIRPFBCH() _q);                    \
+                                                                            \
+/* Get prototype sub-filter length 'p' where h_len = num_channels*p + 1 */  \
+unsigned int FIRPFBCH(_get_sub_len)(FIRPFBCH() _q);                         \
+                                                                            \
 /* Execute filterbank as synthesizer on block of samples                */  \
 /*  _q      : filterbank channelizer object                             */  \
 /*  _x      : channelized input, [size: num_channels x 1]               */  \

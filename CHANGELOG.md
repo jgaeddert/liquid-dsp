@@ -21,6 +21,8 @@
     - firpfbch, firpfbch2, firpfbchr: added interface to support filter
       bandwidth specification independent of number of channels and
       decimation rate
+    - firpfbch: adding access methods for retrieving type, number of
+      channels, and sub-filter length
 
 ## 1.8.3 - 2026-09-26
 
