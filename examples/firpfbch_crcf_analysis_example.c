@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
     liquid_argparse_add(unsigned, num_channels, 8, 'M', "number of channels", NULL);
     liquid_argparse_add(unsigned, m,            4, 'm', "filter delay (input samples)", NULL);
     liquid_argparse_add(float,    As,          60, 's', "filter stop-band suppression level [dB]", NULL);
+    liquid_argparse_add(float,    w,           -1, 'w', "filter bandwidth", NULL);
     liquid_argparse_add(unsigned, num_frames,  25, 'n', "number of samples to generate", NULL);
     liquid_argparse_parse(argc,argv);
 
@@ -52,15 +53,15 @@ int main(int argc, char* argv[])
             x[k] += pulse[k] * cexpf(_Complex_I*2*M_PI*fc[i]*k) * bw[i];
     }
 
+#if 1
+    // create filterbank channelizer object using internal method for filter
+    firpfbch_crcf q = firpfbch_crcf_create_prototype(LIQUID_ANALYZER, num_channels, m, As, w);
+#else
     // create prototype filter
     unsigned int h_len = 2*num_channels*m + 1;
     float h[h_len];
     liquid_firdes_kaiser(h_len, 0.5f/(float)num_channels, As, 0.0f, h);
 
-#if 0
-    // create filterbank channelizer object using internal method for filter
-    firpfbch_crcf q = firpfbch_crcf_create_kaiser(LIQUID_ANALYZER, num_channels, m, As);
-#else
     // create filterbank channelizer object using external filter coefficients
     firpfbch_crcf q = firpfbch_crcf_create(LIQUID_ANALYZER, num_channels, 2*m, h);
 #endif
@@ -84,16 +85,9 @@ int main(int argc, char* argv[])
     fprintf(fid,"num_channels = %u;\n", num_channels);
     fprintf(fid,"m            = %u;\n", m);
     fprintf(fid,"num_frames   = %u;\n", num_frames);
-    fprintf(fid,"h_len        = 2*num_channels*m+1;\n");
     fprintf(fid,"num_samples  = num_frames*num_channels;\n");
-
-    fprintf(fid,"h = zeros(1,h_len);\n");
     fprintf(fid,"x = zeros(1,num_samples);\n");
     fprintf(fid,"y = zeros(num_channels, num_frames);\n");
-
-    // save prototype filter
-    for (i=0; i<h_len; i++)
-        fprintf(fid,"  h(%6u) = %12.4e;\n", i+1, h[i]);
 
     // save input signal
     for (i=0; i<num_samples; i++)
@@ -109,18 +103,10 @@ int main(int argc, char* argv[])
 
     // plot results
     fprintf(fid,"\n");
-    fprintf(fid,"nfft = 1024;\n"); // TODO: use nextpow2
+    fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"H = 20*log10(abs(fftshift(fft(h/num_channels,nfft))));\n");
     fprintf(fid,"X = 20*log10(abs(fftshift(fft(x,nfft))));\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(f, H, 'Color', [0 0.5 0.25], 'LineWidth', 2);\n");
-    fprintf(fid,"  axis([-0.5 0.5 -100 10]);\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
-    fprintf(fid,"  ylabel('Prototype Filter PSD');\n");
-    fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"  plot(f, X, 'Color', [0 0.25 0.5], 'LineWidth', 2);\n");
     fprintf(fid,"  axis([-0.5 0.5 -100 0]);\n");
     fprintf(fid,"  grid on;\n");

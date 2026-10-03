@@ -32,7 +32,7 @@ int main(int argc, char*argv[])
     // create multi-signal source generator
     msourcecf gen = msourcecf_create_default();
 
-    // add signals          (gen,  fc,    bw,    gain, {options})
+    // add signals     (gen,  fc,    bw,    gain, {options})
     msourcecf_add_noise(gen,  0.00f, 1.0f, -60);   // wide-band noise
     msourcecf_add_noise(gen, -0.30f, 0.1f, -20);   // narrow-band noise
     msourcecf_add_tone (gen,  0.08f, 0.0f,   0);   // tone
