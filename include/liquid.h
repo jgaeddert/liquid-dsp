@@ -9628,8 +9628,12 @@ int FIRPFBCH2(_print)(FIRPFBCH2() _q);                                      \
 /* Get type, either LIQUID_ANALYZER or LIQUID_SYNTHESIZER               */  \
 int FIRPFBCH2(_get_type)(FIRPFBCH2() _q);                                   \
                                                                             \
-/* Get number of channels, M                                            */  \
-unsigned int FIRPFBCH2(_get_M)(FIRPFBCH2() _q);                             \
+/* Get number of output channels to channelizer                         */  \
+DEPRECATED("use firpfbch2_get_num_channels(...) instead",                   \
+unsigned int FIRPFBCH2(_get_M)(FIRPFBCH2() _q)  );                          \
+                                                                            \
+/* Get number of output channels to channelizer                         */  \
+unsigned int FIRPFBCH2(_get_num_channels)(FIRPFBCH2() _q);                  \
                                                                             \
 /* Get prototype filter semi-length, m                                  */  \
 unsigned int FIRPFBCH2(_get_m)(FIRPFBCH2() _q);                             \
