@@ -7,6 +7,11 @@
       metadata, description, and keywords; following autotest methodology
     - added more efficient progression of trials setting to meet target
       runtime
+  * filter
+    - firfilt: removing unnecessary variable-length array
+    - iirfilt: replacing element-by-element copy with memmove
+  * matrix
+    - cleaning up manual element-by-element calls with memmove() and memset()
   * multichannel
     - firpfbch, firpfbch2, firpfbchr: added interface to support filter
       bandwidth specification independent of number of channels and
