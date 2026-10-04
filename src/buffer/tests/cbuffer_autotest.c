@@ -290,6 +290,47 @@ LIQUID_AUTOTEST(cbufferf_flow,"test general cbuffer flow","buffer,cbuffer",0.1)
     // destroy object
     cbufferf_destroy(q);
 }
+LIQUID_AUTOTEST(cbufferf_read_partial_wrap,"read only requested elements across wrap","buffer,cbuffer",0.1)
+{
+    float input[10];
+    float append[4] = {10, 11, 12, 13};
+    float expected[4] = {7, 8, 9, 10};
+    float *r;
+    unsigned int num_read;
+    unsigned int i;
+
+    for (i=0; i<10; i++)
+        input[i] = i;
+
+    cbufferf q = cbufferf_create_max(10, 8);
+    cbufferf_write(q, input, 10);
+    cbufferf_release(q, 7);
+    cbufferf_write(q, append, 4);
+    cbufferf_read(q, 4, &r, &num_read);
+
+    LIQUID_CHECK(num_read == 4);
+    LIQUID_CHECK_ARRAY(r, expected, sizeof(expected));
+    cbufferf_destroy(q);
+}
+LIQUID_AUTOTEST(cbufferf_index_wrap,"wrap single-sample circular-buffer indices","buffer,cbuffer",0.1)
+{
+    float input[5] = {0, 1, 2, 3, 4};
+    float value;
+    unsigned int i;
+
+    cbufferf q = cbufferf_create(5);
+    cbufferf_write(q, input, 5);
+    cbufferf_release(q, 4);
+    cbufferf_release(q, 1);
+    LIQUID_CHECK(cbufferf_is_empty(q));
+
+    for (i=0; i<20; i++) {
+        LIQUID_CHECK(cbufferf_push(q, (float)i) == LIQUID_OK);
+        LIQUID_CHECK(cbufferf_pop(q, &value) == LIQUID_OK);
+        LIQUID_CHECK(value == (float)i);
+    }
+    cbufferf_destroy(q);
+}
 
 LIQUID_AUTOTEST(cbufferf_config,"test cbuffer configurations","buffer,cbuffer",0.1)
 {
