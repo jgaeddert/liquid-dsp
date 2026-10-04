@@ -7,11 +7,15 @@
       metadata, description, and keywords; following autotest methodology
     - added more efficient progression of trials setting to meet target
       runtime
+  * buffer
+    - window: upading write() method to be substantially more efficient,
+      using contiguous input blocks (up to 10 times faster)
   * filter
     - firfilt: removing unnecessary variable-length array
     - iirfilt: replacing element-by-element copy with memmove
   * matrix
     - cleaning up manual element-by-element calls with memmove() and memset()
+    - improved speed for multiplications by re-ordering operations
   * multichannel
     - firpfbch, firpfbch2, firpfbchr: added interface to support filter
       bandwidth specification independent of number of channels and
