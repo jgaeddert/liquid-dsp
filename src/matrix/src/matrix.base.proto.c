@@ -71,9 +71,7 @@ int MATRIX(_zeros)(T *          _x,
                    unsigned int _r,
                    unsigned int _c)
 {
-    unsigned int k;
-    for (k=0; k<_r*_c; k++)
-        _x[k] = 0.;
+    memset(_x, 0, _r*_c*sizeof(*_x));
     return LIQUID_OK;
 }
 

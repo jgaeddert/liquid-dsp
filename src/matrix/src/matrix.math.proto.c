@@ -140,14 +140,10 @@ int MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
     if (_rz != _rx || _rz != _ry || _rx != _ry || _cz != _cx + _cy)
         return liquid_error(LIQUID_EIRANGE,"matrix_aug(), invalid dimensions");
 
-    // TODO: improve speed with memmove
-    unsigned int r, c, n;
+    unsigned int r;
     for (r=0; r<_rz; r++) {
-        n=0;
-        for (c=0; c<_cx; c++)
-            matrix_access(_z,_rz,_cz,r,n++) = matrix_access(_x,_rx,_cx,r,c);
-        for (c=0; c<_cy; c++)
-            matrix_access(_z,_rz,_cz,r,n++) = matrix_access(_y,_ry,_cy,r,c);
+        memmove(&_z[r*_cz],       &_x[r*_cx], _cx*sizeof(T));
+        memmove(&_z[r*_cz + _cx], &_y[r*_cy], _cy*sizeof(T));
     }
     return LIQUID_OK;
 }
@@ -254,12 +250,8 @@ int MATRIX(_mul_transpose)(T *          _x,
     unsigned int c;
     unsigned int i;
 
-    // clear _xxT
-    for (i=0; i<_m*_m; i++)
-        _xxT[i] = 0.0f;
-
     // 
-    T sum = 0;
+    T sum;
     for (r=0; r<_m; r++) {
 
         for (c=0; c<_m; c++) {
@@ -288,12 +280,8 @@ int MATRIX(_transpose_mul)(T *          _x,
     unsigned int c;
     unsigned int i;
 
-    // clear _xTx
-    for (i=0; i<_n*_n; i++)
-        _xTx[i] = 0.0f;
-
     // 
-    T sum = 0;
+    T sum;
     for (r=0; r<_n; r++) {
 
         for (c=0; c<_n; c++) {
@@ -322,12 +310,8 @@ int MATRIX(_mul_hermitian)(T *          _x,
     unsigned int c;
     unsigned int i;
 
-    // clear _xxH
-    for (i=0; i<_m*_m; i++)
-        _xxH[i] = 0.0f;
-
     // 
-    T sum = 0;
+    T sum;
     for (r=0; r<_m; r++) {
 
         for (c=0; c<_m; c++) {
@@ -355,12 +339,8 @@ int MATRIX(_hermitian_mul)(T *          _x,
     unsigned int c;
     unsigned int i;
 
-    // clear _xHx
-    for (i=0; i<_n*_n; i++)
-        _xHx[i] = 0.0f;
-
     // 
-    T sum = 0;
+    T sum;
     for (r=0; r<_n; r++) {
 
         for (c=0; c<_n; c++) {
