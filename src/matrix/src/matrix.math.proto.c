@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -112,20 +112,25 @@ int MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
 
     unsigned int r, c, i;
     for (r=0; r<_ZR; r++) {
-        for (c=0; c<_ZC; c++) {
-            // z(i,j) = dotprod( x(i,:), y(:,j) )
-            T sum=0.0f;
-            for (i=0; i<_XC; i++) {
-                sum += matrix_access(_X,_XR,_XC,r,i) *
-                       matrix_access(_Y,_YR,_YC,i,c);
-            }
-            matrix_access(_Z,_ZR,_ZC,r,c) = sum;
+        T * z = _Z + r*_ZC;
+
+        // initialize output row before accumulating products
+        for (c=0; c<_ZC; c++)
+            z[c] = 0.0f;
+
+        for (i=0; i<_XC; i++) {
+            T x = _X[r*_XC+i];
+            T * y = _Y + i*_YC;
+            for (c=0; c<_ZC; c++)
+                z[c] += x * y[c];
+        }
 #ifdef DEBUG
+        for (c=0; c<_ZC; c++) {
             printf("z(%u,%u) = ", r, c);
             MATRIX_PRINT_ELEMENT(_Z,_ZR,_ZC,r,c);
             printf("\n");
-#endif
         }
+#endif
     }
     return LIQUID_OK;
 }
