@@ -3,7 +3,7 @@
 
 #include "liquid.benchmark.h"
 
-// ./bench/null_benchmark.c
+// ./benchmark/null_benchmark.c
 extern struct liquid_benchmark_s null_s;
 // ./src/agc/bench/agc_crcf_benchmark.c
 extern struct liquid_benchmark_s agc_crcf_s;
@@ -24,6 +24,11 @@ extern struct liquid_benchmark_s windowcf_push_n32_s;
 extern struct liquid_benchmark_s windowcf_push_n64_s;
 extern struct liquid_benchmark_s windowcf_push_n128_s;
 extern struct liquid_benchmark_s windowcf_push_n256_s;
+extern struct liquid_benchmark_s windowcf_write_n16_s;
+extern struct liquid_benchmark_s windowcf_write_n64_s;
+extern struct liquid_benchmark_s windowcf_write_n256_s;
+extern struct liquid_benchmark_s windowcf_write_n1024_s;
+extern struct liquid_benchmark_s windowcf_write_n4096_s;
 // ./src/buffer/bench/window_read_benchmark.c
 extern struct liquid_benchmark_s windowcf_read_n16_s;
 extern struct liquid_benchmark_s windowcf_read_n32_s;
@@ -82,10 +87,10 @@ extern struct liquid_benchmark_s fec_dec_rep5_n64_s;
 extern struct liquid_benchmark_s fec_dec_hamming74_n64_s;
 extern struct liquid_benchmark_s fec_dec_hamming84_n64_s;
 extern struct liquid_benchmark_s fec_dec_hamming128_n64_s;
+extern struct liquid_benchmark_s fec_dec_golay2412_n64_s;
 extern struct liquid_benchmark_s fec_dec_secded2216_n64_s;
 extern struct liquid_benchmark_s fec_dec_secded3932_n64_s;
 extern struct liquid_benchmark_s fec_dec_secded7264_n64_s;
-extern struct liquid_benchmark_s fec_dec_golay2412_n64_s;
 extern struct liquid_benchmark_s fec_dec_conv27_n64_s;
 extern struct liquid_benchmark_s fec_dec_conv29_n64_s;
 extern struct liquid_benchmark_s fec_dec_conv39_n64_s;
@@ -110,10 +115,10 @@ extern struct liquid_benchmark_s fec_enc_rep5_n64_s;
 extern struct liquid_benchmark_s fec_enc_hamming74_n64_s;
 extern struct liquid_benchmark_s fec_enc_hamming84_n64_s;
 extern struct liquid_benchmark_s fec_enc_hamming128_n64_s;
+extern struct liquid_benchmark_s fec_enc_golay2412_n64_s;
 extern struct liquid_benchmark_s fec_enc_secded2216_n64_s;
 extern struct liquid_benchmark_s fec_enc_secded3932_n64_s;
 extern struct liquid_benchmark_s fec_enc_secded7264_n64_s;
-extern struct liquid_benchmark_s fec_enc_golay2412_n64_s;
 extern struct liquid_benchmark_s fec_enc_conv27_n64_s;
 extern struct liquid_benchmark_s fec_enc_conv29_n64_s;
 extern struct liquid_benchmark_s fec_enc_conv39_n64_s;
@@ -877,6 +882,12 @@ extern struct liquid_benchmark_s matrixf_linsolve_n8_s;
 extern struct liquid_benchmark_s matrixf_linsolve_n16_s;
 extern struct liquid_benchmark_s matrixf_linsolve_n32_s;
 extern struct liquid_benchmark_s matrixf_linsolve_n64_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n2_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n4_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n8_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n16_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n32_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n64_s;
 // ./src/matrix/bench/matrixf_mul_benchmark.c
 extern struct liquid_benchmark_s matrixf_mul_n2_s;
 extern struct liquid_benchmark_s matrixf_mul_n4_s;
@@ -1165,6 +1176,11 @@ liquid_benchmark liquid_benchmarks[] =
     &windowcf_push_n64_s,
     &windowcf_push_n128_s,
     &windowcf_push_n256_s,
+    &windowcf_write_n16_s,
+    &windowcf_write_n64_s,
+    &windowcf_write_n256_s,
+    &windowcf_write_n1024_s,
+    &windowcf_write_n4096_s,
     &windowcf_read_n16_s,
     &windowcf_read_n32_s,
     &windowcf_read_n64_s,
@@ -1212,10 +1228,10 @@ liquid_benchmark liquid_benchmarks[] =
     &fec_dec_hamming74_n64_s,
     &fec_dec_hamming84_n64_s,
     &fec_dec_hamming128_n64_s,
+    &fec_dec_golay2412_n64_s,
     &fec_dec_secded2216_n64_s,
     &fec_dec_secded3932_n64_s,
     &fec_dec_secded7264_n64_s,
-    &fec_dec_golay2412_n64_s,
     &fec_dec_conv27_n64_s,
     &fec_dec_conv29_n64_s,
     &fec_dec_conv39_n64_s,
@@ -1239,10 +1255,10 @@ liquid_benchmark liquid_benchmarks[] =
     &fec_enc_hamming74_n64_s,
     &fec_enc_hamming84_n64_s,
     &fec_enc_hamming128_n64_s,
+    &fec_enc_golay2412_n64_s,
     &fec_enc_secded2216_n64_s,
     &fec_enc_secded3932_n64_s,
     &fec_enc_secded7264_n64_s,
-    &fec_enc_golay2412_n64_s,
     &fec_enc_conv27_n64_s,
     &fec_enc_conv29_n64_s,
     &fec_enc_conv39_n64_s,
@@ -1974,6 +1990,12 @@ liquid_benchmark liquid_benchmarks[] =
     &matrixf_linsolve_n16_s,
     &matrixf_linsolve_n32_s,
     &matrixf_linsolve_n64_s,
+    &matrixf_cgsolve_n2_s,
+    &matrixf_cgsolve_n4_s,
+    &matrixf_cgsolve_n8_s,
+    &matrixf_cgsolve_n16_s,
+    &matrixf_cgsolve_n32_s,
+    &matrixf_cgsolve_n64_s,
     &matrixf_mul_n2_s,
     &matrixf_mul_n4_s,
     &matrixf_mul_n8_s,

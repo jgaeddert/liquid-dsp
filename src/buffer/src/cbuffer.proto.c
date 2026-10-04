@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,11 @@
 #include "liquid.internal.h"
 
 // linearize buffer (if necessary)
-int CBUFFER(_linearize)(CBUFFER() _q);
+int CBUFFER(_linearize)(CBUFFER() _q, unsigned int _num_wrap);
 
 // cbuffer object
-struct CBUFFER(_s) {
+struct CBUFFER(_s)
+{
     // allocated memory array
     T * v;
 
@@ -187,7 +188,9 @@ int CBUFFER(_push)(CBUFFER() _q,
     _q->v[_q->write_index] = _v;
 
     // update write index
-    _q->write_index = (_q->write_index+1) % _q->max_size;
+    _q->write_index++;
+    if (_q->write_index == _q->max_size)
+        _q->write_index = 0;
 
     // increment number of elements
     _q->num_elements++;
@@ -240,7 +243,9 @@ int CBUFFER(_pop)(CBUFFER() _q,
         *_v = _q->v[ _q->read_index ];
 
     // increment read index
-    _q->read_index = (_q->read_index + 1) % _q->max_size;
+    _q->read_index++;
+    if (_q->read_index == _q->max_size)
+        _q->read_index = 0;
 
     // decrement number of elements in the buffer
     _q->num_elements--;
@@ -265,9 +270,10 @@ int CBUFFER(_read)(CBUFFER()      _q,
     if (_num_requested > _q->max_read)
         _num_requested = _q->max_read;
 
-    // linearize tail end of buffer if necessary
-    if (_num_requested > (_q->max_size - _q->read_index))
-        CBUFFER(_linearize)(_q);
+    // linearize only the requested elements that wrap past the end
+    unsigned int num_before_wrap = _q->max_size - _q->read_index;
+    if (_num_requested > num_before_wrap)
+        CBUFFER(_linearize)(_q, _num_requested - num_before_wrap);
     
     // set output pointer appropriately
     *_v        = _q->v + _q->read_index;
@@ -284,7 +290,11 @@ int CBUFFER(_release)(CBUFFER()    _q,
         return liquid_error(LIQUID_EIRANGE,"cbuffer%s_release(), cannot release more elements in buffer than exist",EXTENSION);
     }
 
-    _q->read_index = (_q->read_index + _n) % _q->max_size;
+    unsigned int num_before_wrap = _q->max_size - _q->read_index;
+    if (_n >= num_before_wrap)
+        _q->read_index = _n - num_before_wrap;
+    else
+        _q->read_index += _n;
     _q->num_elements -= _n;
     return LIQUID_OK;
 }
@@ -295,7 +305,7 @@ int CBUFFER(_release)(CBUFFER()    _q,
 //
 
 // internal linearization
-int CBUFFER(_linearize)(CBUFFER() _q)
+int CBUFFER(_linearize)(CBUFFER() _q, unsigned int _num_wrap)
 {
 #if 0
     // check to see if anything needs to be done
@@ -306,8 +316,8 @@ int CBUFFER(_linearize)(CBUFFER() _q)
     //printf("cbuffer linearize: [%6u : %6u], num elements: %6u, read index: %6u, write index: %6u\n",
     //        _q->max_size, _q->max_read-1, _q->num_elements, _q->read_index, _q->write_index);
 
-    // move maximum amount
-    memmove(_q->v + _q->max_size, _q->v, (_q->max_read-1)*sizeof(T));
+    // move only the wrapped elements requested from the start of the buffer
+    memmove(_q->v + _q->max_size, _q->v, _num_wrap*sizeof(T));
     return LIQUID_OK;
 }
 

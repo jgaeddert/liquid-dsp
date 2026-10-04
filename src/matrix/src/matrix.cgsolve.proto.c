@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2020 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,9 +64,13 @@ int MATRIX(_cgsolve)(T *          _A,
     //  3. residual tolerance
 
     // allocate memory for arrays
-    T x0[_n], x1[_n];   // iterative vector x (solution estimate)
-    T d0[_n], d1[_n];   // iterative vector d
-    T r0[_n], r1[_n];   // iterative vector r (step direction)
+    T x0_buf[_n], x1_buf[_n];   // iterative vector x (solution estimate)
+    T d0_buf[_n], d1_buf[_n];   // iterative vector d
+    T r0_buf[_n], r1_buf[_n];   // iterative vector r (step direction)
+    T * x0 = x0_buf, * x1 = x1_buf;
+    T * d0 = d0_buf, * d1 = d1_buf;
+    T * r0 = r0_buf, * r1 = r1_buf;
+    T * tmp;
     T q[_n];            // A * d0
     T Ax1[_n];          // A * x1
 
@@ -169,10 +173,10 @@ int MATRIX(_cgsolve)(T *          _A,
         printf("  res    = %12.4e\n", res);
 #endif
 
-        // copy old x, d, r, delta
-        memmove(x0, x1, _n*sizeof(T));
-        memmove(d0, d1, _n*sizeof(T));
-        memmove(r0, r1, _n*sizeof(T));
+        // swap old/new x, d, and r vectors instead of copying their contents
+        tmp = x0; x0 = x1; x1 = tmp;
+        tmp = d0; d0 = d1; d1 = tmp;
+        tmp = r0; r0 = r1; r1 = tmp;
         delta0 = delta1;
 
         // increment counter

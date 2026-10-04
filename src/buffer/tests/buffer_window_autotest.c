@@ -141,6 +141,29 @@ LIQUID_AUTOTEST(windowf,"basic window buffer tests","buffer,window",0.1)
     windowf_destroy(w);
 }
 
+LIQUID_AUTOTEST(windowf_write_wrap,"bulk window writes across multiple wraps","buffer,window",0.1)
+{
+    float input[37];
+    float expected0[5] = {33, 34, 35, 36, 37};
+    float expected1[5] = {13, 14, 15, 16, 17};
+    float *r;
+    unsigned int i;
+
+    for (i=0; i<37; i++)
+        input[i] = i+1;
+
+    windowf w = windowf_create(5);
+    windowf_write(w, input, 37);
+    windowf_read(w, &r);
+    LIQUID_CHECK_ARRAY(r, expected0, sizeof(expected0));
+
+    windowf_write(w, input, 17);
+    windowf_read(w, &r);
+    LIQUID_CHECK_ARRAY(r, expected1, sizeof(expected1));
+
+    windowf_destroy(w);
+}
+
 LIQUID_AUTOTEST(window_copy,"test window buffer copy operation","buffer,window",0.1)
 {
     // create window

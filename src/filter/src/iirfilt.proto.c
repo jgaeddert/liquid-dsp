@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2024 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -572,11 +572,8 @@ int IIRFILT(_execute_norm)(IIRFILT() _q,
                            TI        _x,
                            TO *      _y)
 {
-    unsigned int i;
-
     // advance buffer
-    for (i=_q->n-1; i>0; i--)
-        _q->v[i] = _q->v[i-1];
+    memmove(_q->v+1, _q->v, (_q->n-1)*sizeof(*_q->v));
 
 #if LIQUID_IIRFILT_USE_DOTPROD
     // compute new v
@@ -588,6 +585,8 @@ int IIRFILT(_execute_norm)(IIRFILT() _q,
     // compute new y
     DOTPROD(_execute)(_q->dpb, _q->v, _y);
 #else
+    unsigned int i;
+
     // compute new v
     TI v0 = _x;
     for (i=1; i<_q->na; i++)

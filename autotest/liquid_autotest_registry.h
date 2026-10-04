@@ -24,6 +24,7 @@ extern struct liquid_autotest_s cvsd_config_s;
 // ./src/buffer/tests/buffer_window_autotest.c
 extern struct liquid_autotest_s window_config_errors_s;
 extern struct liquid_autotest_s windowf_s;
+extern struct liquid_autotest_s windowf_write_wrap_s;
 extern struct liquid_autotest_s window_copy_s;
 // ./src/buffer/tests/cbuffer_autotest.c
 extern struct liquid_autotest_s cbufferf_s;
@@ -1531,6 +1532,7 @@ liquid_autotest liquid_autotest_registry[] =
     &cvsd_config_s,
     &window_config_errors_s,
     &windowf_s,
+    &windowf_write_wrap_s,
     &window_copy_s,
     &cbufferf_s,
     &cbuffercf_s,

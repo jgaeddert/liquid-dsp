@@ -24,6 +24,7 @@
 // Matrix L/U decomposition method definitions
 //
 
+#include <string.h>
 #include "liquid.internal.h"
 
 // L/U/P decomposition, Crout's method
@@ -40,15 +41,12 @@ int MATRIX(_ludecomp_crout)(T *          _x,
 
     unsigned int n = _rx;
 
-    // reset L, U
-    unsigned int i;
-    for (i=0; i<n*n; i++) {
-        _l[i] = 0.0;
-        _u[i] = 0.0;
-        _p[i] = 0.0;
-    }
+    // reset L, U, P
+    memset(_l, 0, n*n*sizeof(*_l));
+    memset(_u, 0, n*n*sizeof(*_u));
+    memset(_p, 0, n*n*sizeof(*_p));
 
-    unsigned int j,k,t;
+    unsigned int i,j,k,t;
     T l_ik, u_kj;
     for (k=0; k<n; k++) {
         for (i=k; i<n; i++) {
@@ -95,15 +93,12 @@ int MATRIX(_ludecomp_doolittle)(T *          _x,
 
     unsigned int n = _rx;
 
-    // reset L, U
-    unsigned int i;
-    for (i=0; i<n*n; i++) {
-        _l[i] = 0.0;
-        _u[i] = 0.0;
-        _p[i] = 0.0;
-    }
+    // reset L, U, P
+    memset(_l, 0, n*n*sizeof(*_l));
+    memset(_u, 0, n*n*sizeof(*_u));
+    memset(_p, 0, n*n*sizeof(*_p));
 
-    unsigned int j,k,t;
+    unsigned int i,j,k,t;
     T u_kj, l_ik;
     for (k=0; k<n; k++) {
         // compute upper triangular matrix

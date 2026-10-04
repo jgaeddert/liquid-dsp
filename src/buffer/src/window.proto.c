@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2023 Joseph Gaeddert
+ * Copyright (c) 2007 - 2026 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -241,10 +241,26 @@ int WINDOW(_write)(WINDOW()     _q,
                    T *          _v,
                    unsigned int _n)
 {
-    // TODO make this more efficient
-    unsigned int i;
-    for (i=0; i<_n; i++)
-        WINDOW(_push)(_q, _v[i]);
+    unsigned int i = 0;
+    while (i < _n) {
+        // wrap the read index and compact the window before writing index 0
+        if (_q->read_index == _q->mask) {
+            memmove(_q->v, _q->v + _q->n, (_q->len-1)*sizeof(T));
+            _q->read_index = 0;
+            _q->v[_q->len-1] = _v[i++];
+            continue;
+        }
+
+        // copy all samples up to the next wrap in one operation
+        unsigned int count = _q->mask - _q->read_index;
+        if (count > _n-i)
+            count = _n-i;
+        memmove(_q->v + _q->read_index + _q->len,
+                _v+i,
+                count*sizeof(T));
+        _q->read_index += count;
+        i += count;
+    }
     return LIQUID_OK;
 }
 
