@@ -176,16 +176,11 @@ FIRFILT() FIRFILT(_create_rect)(unsigned int _n)
     if (_n == 0 || _n > 1024)
         return liquid_error_config("firfilt_%s_create_rect(), filter length must be in [1,1024]", EXTENSION_FULL);
 
-    // create float array coefficients
-    float hf[_n];
+    // create coefficients array
     unsigned int i;
-    for (i=0; i<_n; i++)
-        hf[i] = 1.0f;
-
-    // copy coefficients to type-specific array
     TC h[_n];
     for (i=0; i<_n; i++)
-        h[i] = (TC) hf[i];
+        h[i] = 1;
 
     // return filter object and return
     return FIRFILT(_create)(h, _n);
