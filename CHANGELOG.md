@@ -16,6 +16,7 @@
   * matrix
     - cleaning up manual element-by-element calls with memmove() and memset()
     - improved speed for multiplications by re-ordering operations
+    - added benchmarks to test optimizations
   * multichannel
     - firpfbch, firpfbch2, firpfbchr: added interface to support filter
       bandwidth specification independent of number of channels and

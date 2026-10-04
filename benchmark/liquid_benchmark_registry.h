@@ -882,6 +882,12 @@ extern struct liquid_benchmark_s matrixf_linsolve_n8_s;
 extern struct liquid_benchmark_s matrixf_linsolve_n16_s;
 extern struct liquid_benchmark_s matrixf_linsolve_n32_s;
 extern struct liquid_benchmark_s matrixf_linsolve_n64_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n2_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n4_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n8_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n16_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n32_s;
+extern struct liquid_benchmark_s matrixf_cgsolve_n64_s;
 // ./src/matrix/bench/matrixf_mul_benchmark.c
 extern struct liquid_benchmark_s matrixf_mul_n2_s;
 extern struct liquid_benchmark_s matrixf_mul_n4_s;
@@ -1984,6 +1990,12 @@ liquid_benchmark liquid_benchmarks[] =
     &matrixf_linsolve_n16_s,
     &matrixf_linsolve_n32_s,
     &matrixf_linsolve_n64_s,
+    &matrixf_cgsolve_n2_s,
+    &matrixf_cgsolve_n4_s,
+    &matrixf_cgsolve_n8_s,
+    &matrixf_cgsolve_n16_s,
+    &matrixf_cgsolve_n32_s,
+    &matrixf_cgsolve_n64_s,
     &matrixf_mul_n2_s,
     &matrixf_mul_n4_s,
     &matrixf_mul_n8_s,

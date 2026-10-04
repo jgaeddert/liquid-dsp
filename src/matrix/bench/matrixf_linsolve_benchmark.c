@@ -34,7 +34,7 @@ float matrixf_linsolve_bench(unsigned long int num_iterations, unsigned int _n)
         A[i] = randnf();
     for (i=0; i<_n; i++)
         b[i] = randnf();
-    
+
     // start trials (4 solves per iteration; round down)
     unsigned long int n = num_iterations / 4;
     if (n < 1) n = 1;
@@ -61,4 +61,44 @@ LIQUID_BENCHMARK(matrixf_linsolve_n32, "matrixf_linsolve execute, n=32", "matrix
     { return matrixf_linsolve_bench(num_iterations, 32); }
 LIQUID_BENCHMARK(matrixf_linsolve_n64, "matrixf_linsolve execute, n=64", "matrix,linsolve")
     { return matrixf_linsolve_bench(num_iterations, 64); }
+
+// Helper function to keep code base small
+float matrixf_cgsolve_bench(unsigned long int num_iterations, unsigned int _n)
+{
+    unsigned long int i;
+
+    float A[_n*_n];
+    float b[_n];
+    float x[_n];
+    for (i=0; i<_n*_n; i++)
+        A[i] = randnf();
+    for (i=0; i<_n; i++)
+        b[i] = randnf();
+
+    // start trials (4 solves per iteration; round down)
+    unsigned long int n = num_iterations / 4;
+    if (n < 1) n = 1;
+    liquid_timer timer = liquid_timer_create(LIQUID_TIMER_RUSAGE);
+    for (i=0; i<n; i++) {
+        matrixf_cgsolve(A,_n,b,x,NULL);
+        matrixf_cgsolve(A,_n,b,x,NULL);
+        matrixf_cgsolve(A,_n,b,x,NULL);
+        matrixf_cgsolve(A,_n,b,x,NULL);
+    }
+    float extime = liquid_toc(timer);
+    return extime;
+}
+
+LIQUID_BENCHMARK(matrixf_cgsolve_n2,  "matrixf_cgsolve execute, n=2",  "matrix,cgsolve")
+    { return matrixf_cgsolve_bench(num_iterations, 2); }
+LIQUID_BENCHMARK(matrixf_cgsolve_n4,  "matrixf_cgsolve execute, n=4",  "matrix,cgsolve")
+    { return matrixf_cgsolve_bench(num_iterations, 4); }
+LIQUID_BENCHMARK(matrixf_cgsolve_n8,  "matrixf_cgsolve execute, n=8",  "matrix,cgsolve")
+    { return matrixf_cgsolve_bench(num_iterations, 8); }
+LIQUID_BENCHMARK(matrixf_cgsolve_n16, "matrixf_cgsolve execute, n=16", "matrix,cgsolve")
+    { return matrixf_cgsolve_bench(num_iterations, 16); }
+LIQUID_BENCHMARK(matrixf_cgsolve_n32, "matrixf_cgsolve execute, n=32", "matrix,cgsolve")
+    { return matrixf_cgsolve_bench(num_iterations, 32); }
+LIQUID_BENCHMARK(matrixf_cgsolve_n64, "matrixf_cgsolve execute, n=64", "matrix,cgsolve")
+    { return matrixf_cgsolve_bench(num_iterations, 64); }
 
