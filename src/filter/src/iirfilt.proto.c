@@ -575,8 +575,7 @@ int IIRFILT(_execute_norm)(IIRFILT() _q,
     unsigned int i;
 
     // advance buffer
-    for (i=_q->n-1; i>0; i--)
-        _q->v[i] = _q->v[i-1];
+    memmove(_q->v+1, _q->v, (_q->n-1)*sizeof(*_q->v));
 
 #if LIQUID_IIRFILT_USE_DOTPROD
     // compute new v
