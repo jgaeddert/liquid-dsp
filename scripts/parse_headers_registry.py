@@ -30,7 +30,7 @@ CONFIG = {
         'ctype':   'liquid_benchmark',
         'array':   'liquid_benchmarks',
         'guard':   '__LIQUID_BENCHMARK_REGISTRY_H__',
-        'output':  'bench/liquid_benchmark_registry.h',
+        'output':  'benchmark/liquid_benchmark_registry.h',
         'ignore':  ('examples', 'sandbox', 'tests'),
         'noun':    'benchmarks',
     },
