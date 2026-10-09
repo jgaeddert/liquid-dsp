@@ -1113,8 +1113,8 @@ int ofdmframesync_rxsymbol(ofdmframesync _q)
     if (_q->num_symbols > 0) {
         // compute phase error (unwrapped)
         float dphi_prime = p_phase[0] - _q->phi_prime;
-        while (dphi_prime >  M_PI) dphi_prime -= M_2_PI;
-        while (dphi_prime < -M_PI) dphi_prime += M_2_PI;
+        while (dphi_prime >  M_PI) dphi_prime -= 2*M_PI;
+        while (dphi_prime < -M_PI) dphi_prime += 2*M_PI;
 
         // adjust NCO proportionally to phase error
         nco_crcf_adjust_frequency(_q->nco_rx, 1e-3f*dphi_prime);
