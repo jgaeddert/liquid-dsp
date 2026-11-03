@@ -27,7 +27,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
+#ifndef _WIN32
+#  include <unistd.h>
+#endif
 
 #include "liquid.h"
 #include "liquid.config.h"

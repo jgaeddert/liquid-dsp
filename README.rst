@@ -80,6 +80,26 @@ to rebind your dynamic libraries with ``sudo ldconfig`` to make the
 shared object available.
 This is not necessary on macOS.
 
+Windows
+-------
+
+Windows builds use `Visual Studio
+<https://visualstudio.microsoft.com>`_ 2022 or later with the Clang
+toolset (the "C++ Clang Compiler for Windows" component) and CMake
+on ``PATH``, selected with presets:
+
+.. code-block:: bat
+
+    cmake --preset windows-clangcl-shared
+    cmake --build --preset windows-clangcl-shared
+
+Shared and static presets exist for x64 and Win32 (see
+``CMakePresets.json``); they use the 2022 generator, while newer
+VS versions configure the same way with ``-G`` pointed at the
+newer VS plus ``-T ClangCl -DENABLE_CLANG_CL=ON``. SIMD is capped
+at SSE4.2 on this path, and the presets disable the example,
+benchmark, autotest, and sandbox programs.
+
 Build Options
 -------------
 
@@ -122,6 +142,8 @@ Here is a table of CMake options available for configuring liquid:
 | ``ENABLE_STRICT``      | OFF     | Enable strict compilation mode (treat warnings as errors)          |
 +------------------------+---------+--------------------------------------------------------------------+
 | ``ENABLE_TIMESTAMPS``  | ON      | Enable building library with dynamic info such as timestamps       |
++------------------------+---------+--------------------------------------------------------------------+
+| ``ENABLE_CLANG_CL``    | OFF     | Build with clang-cl on Windows (VS Clang toolset)                  |
 +------------------------+---------+--------------------------------------------------------------------+
 
 For example, if you want to benchmark how fast a vector dot product

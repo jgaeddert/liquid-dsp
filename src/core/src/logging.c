@@ -28,8 +28,29 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
+#ifndef _WIN32
+#  include <unistd.h>
+#endif
 #include "liquid.internal.h"
+
+#ifdef _WIN32
+// strsep() is BSD/POSIX-only; minimal reimplementation for MSVC builds.
+static char *strsep(char **_stringp, const char *_delim)
+{
+    char *begin = *_stringp;
+    char *end;
+    if (begin == NULL)
+        return NULL;
+    end = begin + strcspn(begin, _delim);
+    if (*end != '\0') {
+        *end++ = '\0';
+        *_stringp = end;
+    } else {
+        *_stringp = NULL;
+    }
+    return begin;
+}
+#endif
 
 #ifdef LIQUID_COLOR_ENABLE
     // enable ANSI escape colors

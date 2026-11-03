@@ -23,6 +23,10 @@
 
 #include "liquid.internal.h"
 
+#if defined(_MSC_VER)
+#  include <intrin.h>
+#endif
+
 // number of leading zeros in a byte
 //  0   0000 0000   :   8
 //  1   0000 0001   :   7
@@ -96,7 +100,12 @@ unsigned int liquid_msb_index(unsigned int _x)
 {
     unsigned int bits;
 
-#if defined __i386__ || defined __amd64__ || defined __x86_64__
+#if defined(_MSC_VER)
+    if (!_x) return 0;
+    unsigned long _index;
+    _BitScanReverse(&_index, _x);
+    return (unsigned int)_index + 1;
+#elif defined __i386__ || defined __amd64__ || defined __x86_64__
     if (!_x) return 0;
     __asm volatile("bsrl %1,%0\n"
         : "=r" (bits)

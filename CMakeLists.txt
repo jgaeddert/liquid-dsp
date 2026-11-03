@@ -36,6 +36,7 @@ set(LOGGING_LEVEL "trace" CACHE STRING "Set minimum logging level to compile")
 option(ENABLE_COLOR      "Set to ON to enable color terminal output" ON)
 option(ENABLE_STRICT     "Set to ON to enable strict compilation"    OFF)
 option(ENABLE_TIMESTAMPS "Compile the build timestamps into binary"  ON)
+option(ENABLE_CLANG_CL   "Set to ON for the Windows clang-cl build"    OFF)
 
 if (NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
     message(FATAL_ERROR "At least one of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be ON")
@@ -94,6 +95,21 @@ include (CheckSymbolExists)
 # check for hardware acceleration
 if (ENABLE_SIMD AND FIND_SIMD)
     find_package(SIMD)
+endif()
+
+if (ENABLE_CLANG_CL AND MSVC)
+    # UCRT <complex.h> predates C99 _Complex; stand the shim in via -I
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/cmake/clangcl)
+    add_compile_definitions(_USE_MATH_DEFINES _CRT_SECURE_NO_WARNINGS)
+
+    # clang-cl declares AVX vector types only with the ISA flag on the
+    # command line, but these translation units also carry the portable and
+    # runtime-dispatch code that must stay baseline-safe; cap SIMD at
+    # SSE4.2, whose sources compile flag-free
+    set(C_AVX_FOUND 0)
+    set(C_AVX2_FOUND 0)
+    set(C_AVX512_FOUND 0)
+    set(C_FMA3_FOUND 0)
 endif()
 
 # check external libraries
@@ -253,7 +269,6 @@ if (ENABLE_SIMD AND C_AMX102_FOUND)
 else()
     set(BUILD_AMX102 0)
 endif()
-
 
 # ---------------------------------------- build info ----------------------------------------
 
@@ -612,6 +627,25 @@ set(LIQUID_OBJECTS
     $<TARGET_OBJECTS:utility>
     $<TARGET_OBJECTS:vector>)
 
+# Clang lowers _Complex multiply/divide to runtime helpers that lld-link
+# doesn't pull in on its own; locate the builtins archive next to the
+# compiler (VS-bundled and standalone LLVM share this layout)
+if (WIN32 AND ENABLE_CLANG_CL AND CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(CLANG_BUILTINS_NAME "clang_rt.builtins-x86_64.lib")
+    else()
+        set(CLANG_BUILTINS_NAME "clang_rt.builtins-i386.lib")
+    endif()
+    get_filename_component(CLANG_BIN_DIR "${CMAKE_C_COMPILER}" DIRECTORY)
+    file(GLOB CLANG_BUILTINS_LIB "${CLANG_BIN_DIR}/../lib/clang/*/lib/windows/${CLANG_BUILTINS_NAME}")
+    if (CLANG_BUILTINS_LIB)
+        list(SORT CLANG_BUILTINS_LIB)
+        list(GET CLANG_BUILTINS_LIB -1 CLANG_BUILTINS_LIB)
+    else()
+        message(FATAL_ERROR "clang runtime builtins (${CLANG_BUILTINS_NAME}) not found near ${CMAKE_C_COMPILER}")
+    endif()
+endif()
+
 # Build shared library
 if (BUILD_SHARED_LIBS)
     add_library(${LIBNAME} SHARED
@@ -620,6 +654,13 @@ if (BUILD_SHARED_LIBS)
     )
     add_library(${NAMESPACE}::${LIBNAME} ALIAS ${LIBNAME})
     set_target_properties(${LIBNAME} PROPERTIES VERSION ${LIQUID_VERSION} SOVERSION 1)
+    if (WIN32)
+        # no export macros in-tree; export everything for the DLL
+        set_target_properties(${LIBNAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+        if (CLANG_BUILTINS_LIB)
+            target_link_libraries(${LIBNAME} PRIVATE ${CLANG_BUILTINS_LIB})
+        endif()
+    endif()
     set(LIQUID_TARGETS ${LIBNAME})
 endif()
 
@@ -654,7 +695,9 @@ foreach(target ${LIQUID_TARGETS})
     set_target_properties(${target}
         PROPERTIES
             PUBLIC_HEADER include/liquid.h)
-    target_link_libraries(${target} c m)
+    if (NOT WIN32)
+        target_link_libraries(${target} c m)
+    endif()
     if (fftw3f_FOUND)
         target_link_libraries(${target} fftw3f)
     endif()
@@ -1065,7 +1108,7 @@ if(BUILD_AUTOTESTS)
     # create output logging directory
     add_custom_command(
         OUTPUT autotest/logs
-        COMMAND mkdir -p autotest/logs
+        COMMAND ${CMAKE_COMMAND} -E make_directory autotest/logs
         )
 
     add_executable(xautotest

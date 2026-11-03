@@ -1,0 +1,100 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "windows-clangcl-shared",
+      "displayName": "Windows clang-cl x64, shared library",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "toolset": "ClangCl",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "ON",
+        "BUILD_STATIC_LIBS": "OFF",
+        "BUILD_AUTOTESTS": "OFF",
+        "BUILD_BENCHMARKS": "OFF",
+        "BUILD_EXAMPLES": "OFF",
+        "BUILD_SANDBOX": "OFF",
+        "ENABLE_CLANG_CL": "ON"
+      }
+    },
+    {
+      "name": "windows-clangcl-static",
+      "displayName": "Windows clang-cl x64, static library",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "toolset": "ClangCl",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "OFF",
+        "BUILD_STATIC_LIBS": "ON",
+        "BUILD_AUTOTESTS": "OFF",
+        "BUILD_BENCHMARKS": "OFF",
+        "BUILD_EXAMPLES": "OFF",
+        "BUILD_SANDBOX": "OFF",
+        "ENABLE_CLANG_CL": "ON"
+      }
+    },
+    {
+      "name": "windows-clangcl-shared-x86",
+      "displayName": "Windows clang-cl Win32, shared library",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "Win32",
+      "toolset": "ClangCl",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "ON",
+        "BUILD_STATIC_LIBS": "OFF",
+        "BUILD_AUTOTESTS": "OFF",
+        "BUILD_BENCHMARKS": "OFF",
+        "BUILD_EXAMPLES": "OFF",
+        "BUILD_SANDBOX": "OFF",
+        "ENABLE_CLANG_CL": "ON"
+      }
+    },
+    {
+      "name": "windows-clangcl-static-x86",
+      "displayName": "Windows clang-cl Win32, static library",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "Win32",
+      "toolset": "ClangCl",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "OFF",
+        "BUILD_STATIC_LIBS": "ON",
+        "BUILD_AUTOTESTS": "OFF",
+        "BUILD_BENCHMARKS": "OFF",
+        "BUILD_EXAMPLES": "OFF",
+        "BUILD_SANDBOX": "OFF",
+        "ENABLE_CLANG_CL": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-clangcl-shared",
+      "configurePreset": "windows-clangcl-shared",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-clangcl-static",
+      "configurePreset": "windows-clangcl-static",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-clangcl-shared-x86",
+      "configurePreset": "windows-clangcl-shared-x86",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-clangcl-static-x86",
+      "configurePreset": "windows-clangcl-static-x86",
+      "configuration": "Release"
+    }
+  ]
+}

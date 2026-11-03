@@ -29,6 +29,9 @@
 // include OS-specific headers
 #ifdef _WIN32
 #  include <windows.h>
+#  if defined(_MSC_VER)
+#    include <intrin.h>
+#  endif
 #else
 #  include <unistd.h>
 #endif
@@ -45,7 +48,15 @@ int liquid_runtime_cpuid_x86(uint32_t   _leaf,
                              uint32_t * _c,
                              uint32_t * _d)
 {
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(_MSC_VER)
+    int _regs[4];
+    __cpuidex(_regs, (int)_leaf, (int)_subleaf);
+    *_a = (uint32_t)_regs[0];
+    *_b = (uint32_t)_regs[1];
+    *_c = (uint32_t)_regs[2];
+    *_d = (uint32_t)_regs[3];
+    return LIQUID_OK;
+#elif defined(__i386__) || defined(__x86_64__)
     __asm__ volatile("cpuid"
       : "=a"(*_a), "=b"(*_b), "=c"(*_c), "=d"(*_d)
       : "a"(_leaf), "c"(_subleaf));
@@ -58,7 +69,9 @@ int liquid_runtime_cpuid_x86(uint32_t   _leaf,
 // check the extended control register for x86 systems, check XMM and YMM states
 uint64_t liquid_runtime_xgetbv_x86(uint32_t _xcr)
 {
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(_MSC_VER)
+    return _xgetbv(_xcr);
+#elif defined(__i386__) || defined(__x86_64__)
     uint32_t eax, edx;
     __asm__ volatile("xgetbv" : "=a"(eax), "=d"(edx) : "c"(_xcr));
     return ((uint64_t)edx << 32) | eax;
