@@ -49,35 +49,96 @@ float liquid_Qf(float _z)
 }
 
 // Marcum Q-function
-// TODO : check this computation
-// [Helstrom:1960], [Proakis:2001], [Helstrom:1992]
-#define NUM_MARCUMQ_ITERATIONS 16
+// [Helstrom:1960], [Proakis:2001]
+//
+// Q_M(a,b) is the probability that a non-central chi-square random
+// variable with 2M degrees of freedom and non-centrality a^2 exceeds
+// b^2. Expanding as a Poisson-weighted mixture of central chi-square
+// distributions gives
+//
+//                infty
+//   Q_M(a,b) =    sum   w_j * G_{M+j}
+//                 j=0
+//
+// where w_j = exp(-lambda) lambda^j / j! with lambda = a^2/2, and
+//       G_n = exp(-x) sum_{i<n} x^i / i! with x = b^2/2
+//
+// Every term is non-negative so there is no cancellation, and terms are
+// evaluated in the log domain so large arguments neither overflow nor
+// underflow. The number of terms grows with lambda, roughly
+// lambda + 40 sqrt(lambda), so alpha is limited to keep run time bounded.
+#define MARCUMQ_ALPHA_MAX (1000.0f)
 float liquid_MarcumQf(int _M,
                       float _alpha,
                       float _beta)
 {
-#if 0
-    // expand as:
-    //                               infty
-    // Q_M(a,b) = exp(-(a^2+b^2)/2) * sum { (a/b)^k I_k(a*b) }
-    //                               k=1-M
-    return 0.0f
-#else
+    // validate input
+    if (_M < 1) {
+        liquid_error(LIQUID_EIVAL,"liquid_MarcumQf(), M must be at least 1");
+        return 0.0f;
+    } else if (isnan(_alpha) || isnan(_beta)) {
+        liquid_error(LIQUID_EIVAL,"liquid_MarcumQf(), alpha and beta cannot be NaN");
+        return 0.0f;
+    } else if (_alpha < 0) {
+        liquid_error(LIQUID_EIVAL,"liquid_MarcumQf(), alpha must be >= 0");
+        return 0.0f;
+    } else if (_alpha > MARCUMQ_ALPHA_MAX) {
+        liquid_error(LIQUID_EIVAL,"liquid_MarcumQf(), alpha cannot exceed %g", MARCUMQ_ALPHA_MAX);
+        return 0.0f;
+    } else if (_beta < 0) {
+        liquid_error(LIQUID_EIVAL,"liquid_MarcumQf(), beta must be >= 0");
+        return 0.0f;
+    }
 
-    // use approximation [Helstrom:1992] (Eq. 25)
-    // Q_M(a,b) ~ erfc(x),
-    //   x = (b-a-M)/sigma^2,
-    //   sigma = M + 2a
+    // special cases: Q_M(a,0) = 1, Q_M(a,infty) = 0
+    if (_beta == 0)
+        return 1.0f;
+    if (isinf(_beta))
+        return 0.0f;
 
-    // compute sigma
-    float sigma = (float)(_M) + 2.0f*_alpha;
+    double lambda = 0.5*(double)_alpha*(double)_alpha;
+    double x      = 0.5*(double)_beta *(double)_beta;
+    double ln_x   = log(x);
 
-    // compute x
-    float x = (_beta - _alpha - (float)_M) / (sigma*sigma);
+    // initialize G = G_M
+    double G = 0.0;
+    unsigned int i;
+    for (i=0; i<(unsigned int)_M; i++)
+        G += exp(-x + i*ln_x - lgamma((double)i + 1.0));
 
-    // return erfc(x)
-    return erfcf(x);
-#endif
+    // special case: Q_M(0,b) = G_M (only the j=0 term has weight)
+    if (lambda == 0)
+        return (float)(G > 1.0 ? 1.0 : G);
+
+    // accumulate Poisson-weighted terms; stop once the remaining terms are
+    // provably negligible relative to the sum (see bound below)
+    double ln_lambda = log(lambda);
+    double num_terms = lambda + 40.0*sqrt(lambda) + 100.0;
+    double Q = 0.0;
+    unsigned int j;
+    for (j=0; (double)j < num_terms; j++) {
+        double w = exp(-lambda + j*ln_lambda - lgamma((double)j + 1.0));
+        Q += w * G;
+
+        // Since G <= 1, the remaining sum is at most the Poisson tail
+        // P(J > j) = sum_{k>j} w_k. Past the mean the ratios w_{k+1}/w_k =
+        // lambda/(k+1) are at most lambda/(j+2) < 1, so the tail is at most
+        // w_{j+1} / (1 - lambda/(j+2)) = w_{j+1} (j+2)/(j+2-lambda).
+        if ((double)j + 2.0 > lambda) {
+            double w_next = w * lambda / ((double)j + 1.0);
+            if (w_next * ((double)j + 2.0) / ((double)j + 2.0 - lambda) < 1e-16*Q)
+                break;
+        }
+
+        // update G_{M+j} -> G_{M+j+1}
+        unsigned int n = (unsigned int)_M + j;
+        G += exp(-x + n*ln_x - lgamma((double)n + 1.0));
+    }
+
+    // clip to valid range to absorb round-off
+    if (Q < 0.0) return 0.0f;
+    if (Q > 1.0) return 1.0f;
+    return (float)Q;
 }
 
 // Marcum Q-function (M=1)
