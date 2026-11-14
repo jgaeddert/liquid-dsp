@@ -40,10 +40,27 @@ LIQUID_AUTOTEST(Q,"Q function","math,q",0.1)
 
 LIQUID_AUTOTEST(MarcumQf,"Marcum Q function, general","math,marcumq",0.1)
 {
-    //float tol = 1e-6f;
-    //LIQUID_CHECK_DELTA(liquid_MarcumQf(1,1.0,2.0), 0.26901206003590999667, tol);
-    //LIQUID_CHECK_DELTA(liquid_MarcumQf(1,4.0,2.0), 0.98527653589128479986, tol);
-    //LIQUID_CHECK_DELTA(liquid_MarcumQf(2,0.7,1.2), 0.86541357815831636702, tol);
+    float tol = 1e-6f;
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(1,1.0,2.0), 0.26901206003590999667, tol);
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(1,4.0,2.0), 0.98527653589128479986, tol);
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(2,0.7,1.2), 0.86541357815831636702, tol);
+
+    // higher orders and larger arguments
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(3, 2.0, 1.0), 0.997529491476742, tol);
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(4, 1.5, 3.0), 0.539446665612777, tol);
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(8, 5.0, 7.0), 0.230126385112493, tol);
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(2,10.0, 9.0), 0.876638381457638, tol);
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(5, 0.1, 4.0), 0.100090800204189, tol);
+
+    // largest supported alpha (evaluate once; check macro expands its argument repeatedly)
+    float Q_max = liquid_MarcumQf(3, 1000.0, 998.0);
+    LIQUID_CHECK_DELTA(Q_max, 0.977384642951468, tol);
+
+    // special cases: Q_M(a,0) = 1, Q_M(a,infty) = 0,
+    //                 Q_M(0,b) = exp(-b^2/2) sum_{k<M} (b^2/2)^k/k!
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(2, 3.0, 0.0), 1.0f,              tol);
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(2, 3.0, INFINITY), 0.0f,         tol);
+    LIQUID_CHECK_DELTA(liquid_MarcumQf(3, 0.0, 2.0), 0.676676416183064, tol);
 }
 
 LIQUID_AUTOTEST(MarcumQ1f,"Marcum Q function with M=1","math,marcumq",0.1)
@@ -113,6 +130,14 @@ LIQUID_AUTOTEST(math_config,"test math configuration and error handling","math",
     LIQUID_CHECK(liquid_MarcumQ1f( 0.0f, 2.0f) ==  0.0f); // alpha cannot be 0
     LIQUID_CHECK(liquid_MarcumQ1f(-1.0f, 2.0f) ==  0.0f); // alpha cannot be negative
     LIQUID_CHECK(liquid_MarcumQ1f( 1.0f,-1.0f) ==  0.0f); // beta cannot be negative
+
+    LIQUID_CHECK(liquid_MarcumQf(0, 1.0f, 2.0f) ==  0.0f); // M must be at least 1
+    LIQUID_CHECK(liquid_MarcumQf(1,-1.0f, 2.0f) ==  0.0f); // alpha cannot be negative
+    LIQUID_CHECK(liquid_MarcumQf(1, 1.0f,-1.0f) ==  0.0f); // beta cannot be negative
+    LIQUID_CHECK(liquid_MarcumQf(1, NAN,  2.0f) ==  0.0f); // alpha cannot be NaN
+    LIQUID_CHECK(liquid_MarcumQf(1, 1.0f, NAN ) ==  0.0f); // beta cannot be NaN
+    LIQUID_CHECK(liquid_MarcumQf(1, 1001.0f, 2.0f) == 0.0f); // alpha too large
+    LIQUID_CHECK(liquid_MarcumQf(1, INFINITY, 2.0f) == 0.0f); // alpha too large
 
     _liquid_error_downgrade_disable();
 }
