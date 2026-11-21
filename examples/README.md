@@ -253,6 +253,10 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `firhilb_interp_example.c`
 
  * `firhilb_example.c`:
+    Convert complex baseband at Fs to a real signal at 2 Fs and recover
+    the complex signal. The plots use time in input sample periods and
+    frequency relative to Fs, showing the Fs/2 translation and conjugate
+    image of the real output. Run with `-a 0` for a single windowed tone.
 
  * `firhilb_interp_example.c`:
     Hilbert transform: 1:2 complex-to-real interpolator.  This example
